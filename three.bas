@@ -1,5 +1,5 @@
 Option Explicit
-Dim Shared __THREE As Object
+Dim Shared As Object __THREE, __GLTFLoader
 Init
 
 Export RepeatWrapping, NearestFilter, SRGBColorSpace, DoubleSide
@@ -7,10 +7,11 @@ Export RepeatWrapping, NearestFilter, SRGBColorSpace, DoubleSide
 Export Init, CreateScene, CreatePerspectiveCamera
 Export CreatePlaneGeometry, CreateBoxGeometry
 Export CreateAmbientLight, CreateDirectionalLight, CreateHemisphereLight
-Export CreateTexture
+Export CreateTexture, CreateFog, CreateColor
 Export CreateMesh, CreateMeshBasicMaterial, CreateMeshNormalMaterial, CreateMeshPhongMaterial
 Export CreateWebGLRenderer
 Export SetPosition, SceneAdd, SetSize, SetRepeat, Render, SetAnimationLoop
+Export LoadGLTF
 
 ' "Constants"
 Function RepeatWrapping: RepeatWrapping = __THREE.RepeatWrapping: End Function
@@ -28,6 +29,18 @@ End Function
 Function CreatePerspectiveCamera (fov, aspect, near, far)
 $If Javascript Then
     return new __THREE.PerspectiveCamera(fov, aspect, near, far);
+$End If
+End Function
+
+Function CreateColor (clr)
+$If Javascript Then
+    return new __THREE.Color(clr);
+$End If
+End Function
+
+Function CreateFog (clr, near, far)
+$If Javascript Then
+    return new __THREE.Fog(clr, near, far);
 $End If
 End Function
 
@@ -105,6 +118,13 @@ $End If
     CreateWebGLRenderer = renderer
 End Function
 
+Sub LoadGLTF (path, callback)
+$If Javascript Then
+    //'const loader = new __GLTFLoader();
+    __GLTFLoader.load(path, callback);
+$End If
+End Sub
+
 Sub SetPosition (element, x, y, z) 
 $If Javascript Then
     element.position.set(x, y, z);
@@ -150,6 +170,7 @@ $If Javascript Then
 $End If
     If window.__THREE Then 
         __THREE = window.__THREE;
+        __GLTFLoader = window.__GLTFLoader
         Exit Sub
     End If
 
@@ -173,7 +194,8 @@ $End If
     s.innerText = _
         "import * as THREE from 'three';" + _
         "import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';" + _
-        "window.__THREE = THREE;"
+        "window.__THREE = THREE;" + _
+        "window.__GLTFLoader = new GLTFLoader();"
     
     Dim wtimer As Integer
     While !window.__THREE And wtimer < 10
@@ -181,4 +203,5 @@ $End If
         wtimer = wtimer + 1
     WEnd
     __THREE = window.__THREE
+    __GLTFLoader = window.__GLTFLoader
 End Sub

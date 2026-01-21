@@ -1,0 +1,184 @@
+Option Explicit
+Dim Shared __THREE As Object
+Init
+
+Export RepeatWrapping, NearestFilter, SRGBColorSpace, DoubleSide
+
+Export Init, CreateScene, CreatePerspectiveCamera
+Export CreatePlaneGeometry, CreateBoxGeometry
+Export CreateAmbientLight, CreateDirectionalLight, CreateHemisphereLight
+Export CreateTexture
+Export CreateMesh, CreateMeshBasicMaterial, CreateMeshNormalMaterial, CreateMeshPhongMaterial
+Export CreateWebGLRenderer
+Export SetPosition, SceneAdd, SetSize, SetRepeat, Render, SetAnimationLoop
+
+' "Constants"
+Function RepeatWrapping: RepeatWrapping = __THREE.RepeatWrapping: End Function
+Function NearestFilter:  NearestFilter  = __THREE.NearestFilter:  End Function
+Function SRGBColorSpace: SRGBColorSpace = __THREE.SRGBColorSpace: End Function
+Function DoubleSide:     DoubleSide     = __THREE.DoubleSide:     End Function
+
+
+Function CreateScene
+$If Javascript Then
+    return new __THREE.Scene();
+$End If
+End Function
+
+Function CreatePerspectiveCamera (fov, aspect, near, far)
+$If Javascript Then
+    return new __THREE.PerspectiveCamera(fov, aspect, near, far);
+$End If
+End Function
+
+Function CreatePlaneGeometry (width, height)
+$If Javascript Then
+    return new __THREE.PlaneGeometry(width, height);
+$End If
+End Function
+
+Function CreateBoxGeometry (width, height, depth, widthSegments, heightSegments, depthSegments) 
+$If Javascript Then
+    return new __THREE.BoxGeometry(width, height, depth, widthSegments, heightSegments, depthSegments);
+$End If
+End Function
+
+Function CreateAmbientLight (clr, intensity)
+$If Javascript Then
+    return new __THREE.AmbientLight(clr, intensity);
+$End If
+End Function
+
+Function CreateDirectionalLight (clr, intensity)
+$If Javascript Then
+    return new __THREE.DirectionalLight(clr, intensity);
+$End If
+End Function
+
+Function CreateHemisphereLight (clr, skyColor, groundColor, intensity)
+$If Javascript Then
+    return new __THREE.HemisphereLight(clr, skyColor, groundColor, intensity);
+$End If
+End Function
+
+Function CreateMesh (geometry, material)
+$If Javascript Then
+    return new __THREE.Mesh (geometry, material);
+$End If
+End Function
+
+Function CreateMeshBasicMaterial (opts)
+$If Javascript Then
+    return new __THREE.MeshBasicMaterial(opts);
+$End If
+End Function
+
+Function CreateMeshNormalMaterial
+$If Javascript Then
+    return new __THREE.MeshNormalMaterial();
+$End If
+End Function
+
+Function CreateMeshPhongMaterial (opts)
+$If Javascript Then
+    return new __THREE.MeshPhongMaterial(opts);
+$End If
+End Function
+
+Function CreateTexture(path)
+$If Javascript Then
+    var loader = new __THREE.TextureLoader();
+    var texture = loader.load(path);
+    texture.colorSpace = __THREE.SRGBColorSpace;
+    return texture;
+$End If
+End Function
+
+Function CreateWebGLRenderer (opts)
+    Dim renderer As Object
+$If Javascript Then
+    renderer = new __THREE.WebGLRenderer (opts);
+$End If
+    renderer.domElement.className = "qbjs-3js-canvas"
+    renderer.domElement.style.display = "none"
+    Dom.Add renderer.domElement, Dom.Container
+    CreateWebGLRenderer = renderer
+End Function
+
+Sub SetPosition (element, x, y, z) 
+$If Javascript Then
+    element.position.set(x, y, z);
+$End If
+End Sub
+
+Sub SceneAdd (scene, mesh)
+$If Javascript Then
+    scene.add(mesh);
+$End If
+End Sub
+
+Sub SetSize (element, width, height)
+$If Javascript Then
+    element.setSize(width, height);
+$End If
+End Sub
+
+Sub SetRepeat (element, width, height)
+$If Javascript Then
+    element.repeat.set(width, height);
+$End If
+End Sub
+
+Sub Render (renderer, scene, camera)
+$If Javascript Then
+    renderer.render(scene, camera);
+    GX.ctx().drawImage(renderer.domElement, 0, 0);
+$End If
+End Sub
+
+Sub SetAnimationLoop (renderer, callback)
+$If Javascript Then
+    renderer.setAnimationLoop(callback);
+$End If
+End Sub
+
+Sub Init
+$If Javascript Then
+    var elements = document.querySelectorAll(".qbjs-3js-canvas");
+    elements.forEach(el => { el.remove(); });
+    console.log(window.__THREE);
+$End If
+    If window.__THREE Then 
+        __THREE = window.__THREE;
+        Exit Sub
+    End If
+
+    Dim As Object s, c
+    c = Dom.Container
+    s = Dom.Create("script", document.head)
+        
+    Dim txt As String
+    txt = _
+        "{" + _
+        "  'imports': {" + _
+        "    'three': 'https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.module.js'," + _
+        "    'three/addons/': 'https://cdn.jsdelivr.net/npm/three@0.149.0/examples/jsm/'" + _
+        "  }" + _
+        "}"
+    s.type = "importmap"
+    s.innerText = String.Replace(txt, "'", Chr$(34))   
+    
+    s = Dom.Create("script")
+    s.type = "module"
+    s.innerText = _
+        "import * as THREE from 'three';" + _
+        "import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';" + _
+        "window.__THREE = THREE;"
+    
+    Dim wtimer As Integer
+    While !window.__THREE And wtimer < 10
+        Delay .1
+        wtimer = wtimer + 1
+    WEnd
+    __THREE = window.__THREE
+End Sub

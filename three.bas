@@ -1,16 +1,17 @@
 Option Explicit
-Dim Shared As Object __THREE, __GLTFLoader
+Dim Shared As Object __THREE, __GLTFLoader, __OrbitControls
 Init
 
 Export RepeatWrapping, NearestFilter, SRGBColorSpace, DoubleSide
 
-Export Init, CreateScene, CreatePerspectiveCamera
+Export CreateScene, CreatePerspectiveCamera
 Export CreatePlaneGeometry, CreateBoxGeometry
 Export CreateAmbientLight, CreateDirectionalLight, CreateHemisphereLight
 Export CreateTexture, CreateFog, CreateColor
 Export CreateMesh, CreateMeshBasicMaterial, CreateMeshNormalMaterial, CreateMeshPhongMaterial
-Export CreateWebGLRenderer
-Export SetPosition, SceneAdd, SetSize, SetRepeat, Render, SetAnimationLoop
+Export CreateWebGLRenderer, CreateOrbitControls
+Export SetPosition, SetTarget, SetSize, SetRepeat
+Export SceneAdd, Render, SetAnimationLoop, Update
 Export LoadGLTF
 
 ' "Constants"
@@ -98,6 +99,19 @@ $If Javascript Then
 $End If
 End Function
 
+Function CreateOrbitControls(camera, canvas)
+$If Javascript Then
+    var controls = __OrbitControls(camera, canvas);
+    return controls;
+$End If
+End Function
+
+Sub Update (element)
+$If Javascript Then
+    element.update();
+$End If
+End Sub
+
 Function CreateTexture(path)
 $If Javascript Then
     var loader = new __THREE.TextureLoader();
@@ -128,6 +142,12 @@ End Sub
 Sub SetPosition (element, x, y, z) 
 $If Javascript Then
     element.position.set(x, y, z);
+$End If
+End Sub
+
+Sub SetTarget (element, x, y, z) 
+$If Javascript Then
+    element.target.set(x, y, z);
 $End If
 End Sub
 
@@ -168,11 +188,12 @@ $If Javascript Then
     elements.forEach(el => { el.remove(); });
     console.log(window.__THREE);
 $End If
-    If window.__THREE Then 
-        __THREE = window.__THREE;
-        __GLTFLoader = window.__GLTFLoader
-        Exit Sub
-    End If
+    'If window.__THREE Then 
+    '    __THREE = window.__THREE;
+    '    __GLTFLoader = window.__GLTFLoader
+    '    __OrbitControls = window.__OrbitControls
+    '    Exit Sub
+    'End If
 
     Dim As Object s, c
     c = Dom.Container
@@ -194,8 +215,10 @@ $End If
     s.innerText = _
         "import * as THREE from 'three';" + _
         "import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';" + _
+        "import {OrbitControls} from 'three/addons/controls/OrbitControls.js';" + _
         "window.__THREE = THREE;" + _
-        "window.__GLTFLoader = new GLTFLoader();"
+        "window.__GLTFLoader = new GLTFLoader();" + _
+        "window.__OrbitControls = function(camera, canvas) { return new OrbitControls(camera, canvas); };"
     
     Dim wtimer As Integer
     While !window.__THREE And wtimer < 10
@@ -204,4 +227,5 @@ $End If
     WEnd
     __THREE = window.__THREE
     __GLTFLoader = window.__GLTFLoader
+    __OrbitControls = window.__OrbitControls
 End Sub

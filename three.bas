@@ -11,8 +11,10 @@ Export CreateTexture, CreateFog, CreateColor
 Export CreateMesh, CreateMeshBasicMaterial, CreateMeshNormalMaterial, CreateMeshPhongMaterial
 Export CreateWebGLRenderer, CreateOrbitControls
 Export SetPosition, SetTarget, SetSize, SetRepeat
-Export SceneAdd, Render, SetAnimationLoop, Update
+Export SceneAdd, Render, SetAnimationLoop, Update, GetObjectByName
 Export LoadGLTF
+
+Export DumpObject
 
 ' "Constants"
 Function RepeatWrapping: RepeatWrapping = __THREE.RepeatWrapping: End Function
@@ -169,6 +171,12 @@ $If Javascript Then
 $End If
 End Sub
 
+Function GetObjectByName (parent, objectName As String)
+$If Javascript Then
+    return parent.getObjectByName(objectName);
+$End If
+End Function
+
 Sub Render (renderer, scene, camera)
 $If Javascript Then
     renderer.render(scene, camera);
@@ -182,18 +190,44 @@ $If Javascript Then
 $End If
 End Sub
 
+' Utilities
+' ---------------------------------------------------------------
+Function DumpObject (rootObj)
+$If Javascript Then
+    return dumpObject(rootObj).join("\n");
+    
+    function dumpObject(obj, lines = [], isLast = true, prefix = "") {
+      var localPrefix; if (isLast) { localPrefix = "\\-"; } else { localPrefix =  "|-";}
+      if (prefix) {  
+          lines.push(prefix + localPrefix + (obj.name || "*no-name*") + " [" + obj.type + "]");
+      } else {
+          lines.push(prefix + "" + (obj.name || "*no-name*") + " [" + obj.type + "]");
+      }
+      var newPrefix; if (isLast) { newPrefix = prefix + " "; } else { newPrefix = prefix +  "| "; }
+      const lastNdx = obj.children.length - 1;
+      obj.children.forEach((child, ndx) => {
+        const isLast = ndx === lastNdx;
+        dumpObject(child, lines, isLast, newPrefix);
+      });
+      return lines;
+    }
+$End If
+End Function
+
+' Setup
+' ---------------------------------------------------------------
 Sub Init
 $If Javascript Then
     var elements = document.querySelectorAll(".qbjs-3js-canvas");
     elements.forEach(el => { el.remove(); });
     console.log(window.__THREE);
 $End If
-    'If window.__THREE Then 
-    '    __THREE = window.__THREE;
-    '    __GLTFLoader = window.__GLTFLoader
-    '    __OrbitControls = window.__OrbitControls
-    '    Exit Sub
-    'End If
+    If window.__THREE Then 
+        __THREE = window.__THREE;
+        __GLTFLoader = window.__GLTFLoader
+        __OrbitControls = window.__OrbitControls
+        Exit Sub
+    End If
 
     Dim As Object s, c
     c = Dom.Container

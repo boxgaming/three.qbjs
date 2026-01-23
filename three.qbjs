@@ -10,11 +10,12 @@ Export Scene, PerspectiveCamera
 Export PlaneGeometry, BoxGeometry
 Export AmbientLight, DirectionalLight, HemisphereLight
 Export Fog, CreateColor As Color
+Export CanvasTexture
 Export Mesh, MeshBasicMaterial, MeshNormalMaterial, MeshPhongMaterial
 Export WebGLRenderer, OrbitControls
 
 ' General Object3d Methods
-Export Set, SetSize, Add, Update
+Export Set, SetSize, Add, Update, Remove
 
 ' Misc Methods
 Export Render, SetAnimationLoop, GetObjectByName
@@ -45,6 +46,12 @@ End Function
 Function CreateColor (clr)
 $If Javascript Then
     return new __THREE.Color(clr);
+$End If
+End Function
+
+Function CanvasTexture (canvas)
+$If Javascript Then
+    return new __THREE.CanvasTexture(canvas);
 $End If
 End Function
 
@@ -150,6 +157,12 @@ End Sub
 Sub Add (parent, child)
 $If Javascript Then
     parent.add(child);
+$End If
+End Sub
+
+Sub Remove (parent, child)
+$If Javascript Then
+    parent.remove(child);
 $End If
 End Sub
 

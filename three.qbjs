@@ -1,5 +1,6 @@
 Option Explicit
-Dim Shared As Object __THREE, __GLTFLoader, __OrbitControls
+Dim Shared As Object __THREE, __GLTFLoader, __OrbitControls', __EffectComposer
+Dim Shared As Object threeCanvas ' TODO: probably shouldn't do this
 Init
 
 ' Constant Exports
@@ -9,20 +10,23 @@ Export RepeatWrapping, NearestFilter, SRGBColorSpace, DoubleSide, Equirectangula
 Export Scene, PerspectiveCamera
 Export PlaneGeometry, BoxGeometry
 Export AmbientLight, DirectionalLight, HemisphereLight
-Export Fog, CreateColor As Color
-Export CanvasTexture
+Export Fog, CreateColor As Color, Vector2
 Export Mesh, MeshBasicMaterial, MeshNormalMaterial, MeshPhongMaterial
-Export WebGLRenderer, OrbitControls
+Export EffectComposer, RenderPass, OutlinePass, ShaderPass
+Export FXAAShader
+Export WebGLRenderer, OrbitControls, Raycaster
 
 ' General Object3d Methods
-Export Set, SetSize, Add, Update, Remove
+Export Set, SetSize, SetHex, SetPixelRatio
+Export Add, AddPass, Update, Remove
 
 ' Misc Methods
-Export Render, SetAnimationLoop, GetObjectByName
+Export Render, SetAnimationLoop, GetObjectByName, SetFromCamera, IntersectFirstObject
+Export UpdateProjectionMatrix
 Export LoadGLTF, LoadTexture
 
-' Utility Methods (not 
-Export DumpObject
+' Utility Methods (not three.js)
+Export GUI, AddGUIItem, DumpObject, ArrayClear, ArrayAdd
 
 ' "Constants"
 Function RepeatWrapping: RepeatWrapping = __THREE.RepeatWrapping: End Function
@@ -43,21 +47,57 @@ $If Javascript Then
 $End If
 End Function
 
+Function Vector2 (x, y)
+$If Javascript Then
+    return new __THREE.Vector2(x, y);
+$End If
+End Function
+
 Function CreateColor (clr)
 $If Javascript Then
     return new __THREE.Color(clr);
 $End If
 End Function
 
-Function CanvasTexture (canvas)
+Function EffectComposer(renderer)
 $If Javascript Then
-    return new __THREE.CanvasTexture(canvas);
+    return new window.__EffectComposer(renderer);
+$End If
+End Function
+
+Function RenderPass(scene, camera)
+$If Javascript Then
+    return new window.__RenderPass(scene, camera);
+$End If
+End Function
+
+Function ShaderPass(shader)
+$If Javascript Then
+    return new window.__ShaderPass(shader);
+$End If
+End Function
+
+Function FXAAShader
+$If Javascript Then
+    return window.__FXAAShader;
+$End If
+End Function
+
+Function OutlinePass(resolution, scene, camera)
+$If Javascript Then
+    return new window.__OutlinePass(resolution, scene, camera);
 $End If
 End Function
 
 Function Fog (clr, near, far)
 $If Javascript Then
     return new __THREE.Fog(clr, near, far);
+$End If
+End Function
+
+Function Raycaster 
+$If Javascript Then
+    return new __THREE.Raycaster();
 $End If
 End Function
 
@@ -145,12 +185,13 @@ $End If
     renderer.domElement.className = "qbjs-3js-canvas"
     renderer.domElement.style.display = "none"
     Dom.Add renderer.domElement, Dom.Container
+    threeCanvas = renderer.domElement
     WebGLRenderer = renderer
 End Function
 
-Sub LoadGLTF (path, callback)
+Sub LoadGLTF (path, onLoad, onProgress, onError)
 $If Javascript Then
-    __GLTFLoader.load(path, callback);
+    __GLTFLoader.load(path, onLoad, onProgress, onError);
 $End If
 End Sub
 
@@ -166,6 +207,12 @@ $If Javascript Then
 $End If
 End Sub
 
+Sub AddPass (element, pass)
+$If Javascript Then
+    element.addPass(pass);
+$End If
+End Sub
+
 Sub Set (element, x, y, z) 
 $If Javascript Then
     element.set(x, y, z);
@@ -178,6 +225,24 @@ $If Javascript Then
 $End If
 End Sub
 
+Sub SetHex (element, clr)
+$If Javascript Then
+    element.setHex(clr);
+$End If
+End Sub
+
+Sub SetPixelRatio (element, ratio)
+$If Javascript Then
+    element.setPixelRatio(ratio);
+$End If
+End Sub
+
+Sub UpdateProjectionMatrix (element)
+$If Javascript Then
+    element.updateProjectionMatrix();
+$End If
+End Sub
+
 Function GetObjectByName (parent, objectName As String)
 $If Javascript Then
     return parent.getObjectByName(objectName);
@@ -187,7 +252,7 @@ End Function
 Sub Render (renderer, scene, camera)
 $If Javascript Then
     renderer.render(scene, camera);
-    GX.ctx().drawImage(renderer.domElement, 0, 0);
+    GX.ctx().drawImage(threeCanvas, 0, 0);
 $End If
 End Sub
 
@@ -197,8 +262,36 @@ $If Javascript Then
 $End If
 End Sub
 
+Sub SetFromCamera (element, pos, camera)
+$If Javascript Then
+    element.setFromCamera(pos, camera);
+$End If
+End Sub
+
+Function IntersectFirstObject (raycaster, elements)
+$If Javascript Then
+    var objects = raycaster.intersectObjects(elements);
+    if (objects.length > 0) {
+        return objects[0].object;
+    }
+    return null;
+$End If
+End Function
+
 ' Utilities
 ' ---------------------------------------------------------------
+Function GUI
+$If Javascript Then
+    return new window.__GUI();
+$End If
+End Function
+
+Sub AddGUIItem (gui, obj, element, min, max, value)
+$If Javascript Then
+    gui.add(obj, element, min, max, value);
+$End If
+End Sub
+
 Function DumpObject (rootObj)
 $If Javascript Then
     return dumpObject(rootObj).join("\n");
@@ -221,21 +314,33 @@ $If Javascript Then
 $End If
 End Function
 
+Sub ArrayClear (array)
+$If Javascript Then
+    array.length = 0;
+$EndIf
+End Sub
+
+Sub ArrayAdd (array, value)
+$If Javascript Then
+    array.push(value);
+$End If
+End Sub
+
 ' Setup
 ' ---------------------------------------------------------------
 Sub Init
 $If Javascript Then
     var elements = document.querySelectorAll(".qbjs-3js-canvas");
     elements.forEach(el => { el.remove(); });
-    console.log(window.__THREE);
 $End If
-    If window.__THREE Then 
-        __THREE = window.__THREE;
-        __GLTFLoader = window.__GLTFLoader
-        __OrbitControls = window.__OrbitControls
-        Exit Sub
-    End If
-
+    'If window.__THREE Then 
+    '    __THREE = window.__THREE;
+    '    __GLTFLoader = window.__GLTFLoader
+    '    __OrbitControls = window.__OrbitControls
+    '    '__EffectComposer = window.__EffectComposer
+    '    Exit Sub
+    'End If
+    
     Dim As Object s, c
     c = Dom.Container
     s = Dom.Create("script", document.head)
@@ -256,10 +361,28 @@ $End If
     s.innerText = _
         "import * as THREE from 'three';" + _
         "import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';" + _
-        "import {OrbitControls} from 'three/addons/controls/OrbitControls.js';" + _
+        "import { OrbitControls } from 'three/addons/controls/OrbitControls.js';" + _
+        "import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';" + _
+        "import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';" + _
+        "import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';" + _
+        "import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';" + _
+        "import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';" + _
+        "import GUI from 'https://cdn.jsdelivr.net/npm/lil-gui@0.21/+esm';" + _
         "window.__THREE = THREE;" + _
         "window.__GLTFLoader = new GLTFLoader();" + _
+        "window.__EffectComposer = EffectComposer;" + _
+        "window.__OutlinePass = OutlinePass;" + _
+        "window.__RenderPass = RenderPass;" + _
+        "window.__ShaderPass = ShaderPass;" + _
+        "window.__FXAAShader = FXAAShader;" + _
+        "window.__GUI = GUI;" + _
         "window.__OrbitControls = function(camera, canvas) { return new OrbitControls(camera, canvas); };"
+        
+        
+        '"import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';" + _
+        '"import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';" + _
+        '"window.__GLTFLoader.setDRACOLoader(new DRACOLoader());" + _
+        '"window.__GLTFLoader.setKTX2Loader(new KTX2Loader());" + _
     
     Dim wtimer As Integer
     While !window.__THREE And wtimer < 10
@@ -269,4 +392,5 @@ $End If
     __THREE = window.__THREE
     __GLTFLoader = window.__GLTFLoader
     __OrbitControls = window.__OrbitControls
+    '__EffectComposer = window.__EffectComposer
 End Sub

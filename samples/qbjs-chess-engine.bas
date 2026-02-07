@@ -1,8 +1,9 @@
 Option Explicit
-Export NewGame, Move, AIMove, Moves, BoardPieces, Turn, IsCheck, IsCheckMate, IsFinished
+Export NewGame, Move, AIMove, Moves, BoardPieces, FEN
+Export Turn, IsCheck, IsCheckMate, IsFinished, LastErrorMessage
+
 Dim Shared sloaded As Integer
-Dim Shared jsChessEngine As Object
-Dim Shared As Object game, state
+Dim Shared As Object jsChessEngine, game, state
 Dim Shared lastError As String
 
 Dim s As Object
@@ -84,6 +85,12 @@ $If Javascript Then
     state = game.exportJson();
 $End If
 End Sub
+
+Function FEN
+$If Javascript Then
+    return game.exportFEN();
+$End If
+End Function
 
 Function Turn: Turn = state.turn:  End Function
 Function IsCheck: IsCheck = state.check:  End Function

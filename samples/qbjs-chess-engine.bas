@@ -1,8 +1,8 @@
 Option Explicit
-Export NewGame, Move, AIMove, Moves, BoardState
+Export NewGame, Move, AIMove, Moves, BoardPieces, Turn, IsCheck, IsCheckMate, IsFinished
 Dim Shared sloaded As Integer
 Dim Shared jsChessEngine As Object
-Dim Shared game As Object
+Dim Shared As Object game, state
 Dim Shared lastError As String
 
 Dim s As Object
@@ -29,6 +29,7 @@ End Sub
 Sub NewGame
 $If Javascript Then
     game = new jsChessEngine.Game();
+    state = game.exportJson();
 $End If
 End Sub
 
@@ -49,31 +50,25 @@ $End If
     Moves = m
 End Function
 
-Function Turn
-$If Javascript Then
-    return game.exportJson().turn;
-$End If
-End Function
-
-Function BoardState
+Function BoardPieces
     Dim key, value As String
     Dim board() As String
 $If Javascript Then
-    var bstate = game.exportJson().pieces;
-    for (key in bstate) {
-        value = bstate[key];
+    for (key in state.pieces) {
+        value = state.pieces[key];
 $End If
         board(key) = value
 $If Javascript Then
     }
 $End If
-    BoardState = board
+    BoardPieces = board
 End Function
 
 Function Move (mstart As String, mend As String)
 $If Javascript Then
     try {
         game.move(mstart, mend);
+        state = game.exportJson();
         return -1;
     }
     catch (e) {
@@ -86,9 +81,12 @@ End Function
 Sub AIMove (level As Integer)
 $If Javascript Then
     game.aiMove(level);
+    state = game.exportJson();
 $End If
 End Sub
 
-Function LastErrorMessage
-    LastErrorMessage = lastError
-End Function
+Function Turn: Turn = state.turn:  End Function
+Function IsCheck: IsCheck = state.check:  End Function
+Function IsCheckMate: IsCheckMate = state.checkMate:  End Function
+Function IsFinished: IsFinished = state.isFinished:  End Function
+Function LastErrorMessage: LastErrorMessage = lastError: End Function

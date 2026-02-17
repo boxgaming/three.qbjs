@@ -1,6 +1,6 @@
 Option Explicit
-Dim Shared As Object __THREE, __GLTFLoader, __OrbitControls', __EffectComposer
-Dim Shared As Object threeCanvas ' TODO: probably shouldn't do this
+Dim Shared As Object __THREE, __GLTFLoader
+Dim Shared As Object threeCanvas
 Init
 
 ' Constant Exports
@@ -18,15 +18,15 @@ Export WebGLRenderer, OrbitControls, Raycaster
 
 ' General Object3d Methods
 Export Set, SetSize, SetHex, SetPixelRatio
-Export Add, AddPass, Update, Remove
+Export Add, AddPass, Clone, Update, Remove, Dispose
 
 ' Misc Methods
-Export Render, SetAnimationLoop, GetObjectByName, SetFromCamera, IntersectFirstObject
+Export Render, SetAnimationLoop, GetObjectByName, SetFromCamera, IntersectObjects
 Export UpdateProjectionMatrix
 Export LoadGLTF, LoadTexture
 
 ' Utility Methods (not three.js)
-Export GUI, AddGUIItem, DumpObject, ArrayClear, ArrayAdd
+Export DumpObject, ArrayClear, ArrayAdd, ArrayItem, ArrayLength
 
 ' "Constants"
 Function RepeatWrapping: RepeatWrapping = __THREE.RepeatWrapping: End Function
@@ -37,43 +37,43 @@ Function EquirectangularReflectionMapping: EquirectangularReflectionMapping = __
 
 Function Scene
 $If Javascript Then
-    return new __THREE.Scene();
+    return await func_RegisterObject(new __THREE.Scene());
 $End If
 End Function
 
 Function PerspectiveCamera (fov, aspect, near, far)
 $If Javascript Then
-    return new __THREE.PerspectiveCamera(fov, aspect, near, far);
+    return await func_RegisterObject(new __THREE.PerspectiveCamera(fov, aspect, near, far));
 $End If
 End Function
 
 Function Vector2 (x, y)
 $If Javascript Then
-    return new __THREE.Vector2(x, y);
+    return await func_RegisterObject(new __THREE.Vector2(x, y));
 $End If
 End Function
 
 Function CreateColor (clr)
 $If Javascript Then
-    return new __THREE.Color(clr);
+    return await func_RegisterObject(new __THREE.Color(clr));
 $End If
 End Function
 
 Function EffectComposer(renderer)
 $If Javascript Then
-    return new window.__EffectComposer(renderer);
+    return await func_RegisterObject(new window.__EffectComposer(renderer));
 $End If
 End Function
 
 Function RenderPass(scene, camera)
 $If Javascript Then
-    return new window.__RenderPass(scene, camera);
+    return await func_RegisterObject(new window.__RenderPass(scene, camera));
 $End If
 End Function
 
 Function ShaderPass(shader)
 $If Javascript Then
-    return new window.__ShaderPass(shader);
+    return await func_RegisterObject(new window.__ShaderPass(shader));
 $End If
 End Function
 
@@ -85,80 +85,79 @@ End Function
 
 Function OutlinePass(resolution, scene, camera)
 $If Javascript Then
-    return new window.__OutlinePass(resolution, scene, camera);
+    return await func_RegisterObject(new window.__OutlinePass(resolution, scene, camera));
 $End If
 End Function
 
 Function Fog (clr, near, far)
 $If Javascript Then
-    return new __THREE.Fog(clr, near, far);
+    return await func_RegisterObject(new __THREE.Fog(clr, near, far));
 $End If
 End Function
 
 Function Raycaster 
 $If Javascript Then
-    return new __THREE.Raycaster();
+    return await func_RegisterObject(new __THREE.Raycaster());
 $End If
 End Function
 
 Function PlaneGeometry (width, height)
 $If Javascript Then
-    return new __THREE.PlaneGeometry(width, height);
+    return await func_RegisterObject(new __THREE.PlaneGeometry(width, height));
 $End If
 End Function
 
 Function BoxGeometry (width, height, depth, widthSegments, heightSegments, depthSegments) 
 $If Javascript Then
-    return new __THREE.BoxGeometry(width, height, depth, widthSegments, heightSegments, depthSegments);
+    return await func_RegisterObject(new __THREE.BoxGeometry(width, height, depth, widthSegments, heightSegments, depthSegments));
 $End If
 End Function
 
 Function AmbientLight (clr, intensity)
 $If Javascript Then
-    return new __THREE.AmbientLight(clr, intensity);
+    return await func_RegisterObject(new __THREE.AmbientLight(clr, intensity));
 $End If
 End Function
 
 Function DirectionalLight (clr, intensity)
 $If Javascript Then
-    return new __THREE.DirectionalLight(clr, intensity);
+    return await func_RegisterObject(new __THREE.DirectionalLight(clr, intensity));
 $End If
 End Function
 
 Function HemisphereLight (clr, skyColor, groundColor, intensity)
 $If Javascript Then
-    return new __THREE.HemisphereLight(clr, skyColor, groundColor, intensity);
+    return await func_RegisterObject(new __THREE.HemisphereLight(clr, skyColor, groundColor, intensity));
 $End If
 End Function
 
 Function Mesh (geometry, material)
 $If Javascript Then
-    return new __THREE.Mesh (geometry, material);
+    return await func_RegisterObject(new __THREE.Mesh (geometry, material));
 $End If
 End Function
 
 Function MeshBasicMaterial (opts)
 $If Javascript Then
-    return new __THREE.MeshBasicMaterial(opts);
+    return await func_RegisterObject(new __THREE.MeshBasicMaterial(opts));
 $End If
 End Function
 
 Function MeshNormalMaterial
 $If Javascript Then
-    return new __THREE.MeshNormalMaterial();
+    return await func_RegisterObject(new __THREE.MeshNormalMaterial());
 $End If
 End Function
 
 Function MeshPhongMaterial (opts)
 $If Javascript Then
-    return new __THREE.MeshPhongMaterial(opts);
+    return await func_RegisterObject(new __THREE.MeshPhongMaterial(opts));
 $End If
 End Function
 
 Function OrbitControls(camera, canvas)
 $If Javascript Then
-    var controls = __OrbitControls(camera, canvas);
-    return controls;
+    return await func_RegisterObject(new __OrbitControls(camera, canvas));
 $End If
 End Function
 
@@ -170,17 +169,18 @@ End Sub
 
 Function LoadTexture(path, onLoad)
 $If Javascript Then
+    //var loader = await func_RegisterObject(new __THREE.TextureLoader());
     var loader = new __THREE.TextureLoader();
     var texture = loader.load(path, onLoad);
     texture.colorSpace = __THREE.SRGBColorSpace;
-    return texture;
+    return await func_RegisterObject(texture);
 $End If
 End Function
 
 Function WebGLRenderer (opts)
     Dim renderer As Object
 $If Javascript Then
-    renderer = new __THREE.WebGLRenderer (opts);
+    renderer = await func_RegisterObject(new __THREE.WebGLRenderer(opts));
 $End If
     renderer.domElement.className = "qbjs-3js-canvas"
     renderer.domElement.style.display = "none"
@@ -200,6 +200,12 @@ $If Javascript Then
     parent.add(child);
 $End If
 End Sub
+
+Function Clone (element, recursive)
+$If Javascript Then
+    return await func_RegisterObject(element.clone(recursive));
+$End If
+End Function
 
 Sub Remove (parent, child)
 $If Javascript Then
@@ -268,30 +274,22 @@ $If Javascript Then
 $End If
 End Sub
 
-Function IntersectFirstObject (raycaster, elements)
+Function IntersectObjects (raycaster, elements)
 $If Javascript Then
-    var objects = raycaster.intersectObjects(elements);
-    if (objects.length > 0) {
-        return objects[0].object;
-    }
-    return null;
+    return raycaster.intersectObjects(elements);
+    //'console.log(objects);
+    //'return objects;
+    //'var objects = raycaster.intersectObjects(elements);
+    //'return objects;
+    //'if (objects.length > 0) {
+    //'    return objects[0].object;
+    //'}
+    //'return null;
 $End If
 End Function
 
 ' Utilities
 ' ---------------------------------------------------------------
-Function GUI
-$If Javascript Then
-    return new window.__GUI();
-$End If
-End Function
-
-Sub AddGUIItem (gui, obj, element, min, max, value)
-$If Javascript Then
-    gui.add(obj, element, min, max, value);
-$End If
-End Sub
-
 Function DumpObject (rootObj)
 $If Javascript Then
     return dumpObject(rootObj).join("\n");
@@ -326,6 +324,89 @@ $If Javascript Then
 $End If
 End Sub
 
+Function ArrayLength (array)
+$If Javascript Then
+    return array.length;
+$End If
+End Function
+
+Function ArrayItem (array, index)
+$If Javascript Then
+    return array[index];
+$End If
+End Function
+
+Function RegisterObject (obj)
+$If Javascript Then
+    if (obj && (obj.dispose || obj.destroy)) {
+        window.__threeobjs.push(obj);
+    }
+$End If
+    RegisterObject = obj
+End Function
+
+Sub DisposeAll
+$If Javascript Then
+    if (window.__threeobjs) {
+        for (var i=0; i < window.__threeobjs.length; i++) {
+            var obj = window.__threeobjs[i];
+            if (obj.dispose) { 
+                disposeObject(obj);
+                //'obj.dispose();
+                //'console.log("disposing: " + typeof obj);
+            }
+            else if (obj.destroy) { obj.destroy(); }
+        }
+    }
+    window.__threeobjs = [];
+    
+function disposeObject(object) {
+    if (!object) return;
+
+    //' If it's a mesh, dispose geometry and materials
+    if (object.isMesh) {
+        if (object.geometry) {
+            object.geometry.dispose();
+        }
+
+        if (object.material) {
+            //' Handle both single and array materials
+            if (Array.isArray(object.material)) {
+                object.material.forEach(material => disposeMaterial(material));
+            } else {
+                disposeMaterial(object.material);
+            }
+        }
+    }
+
+    //' Recursively dispose children
+    if (object.children) {
+        while (object.children.length > 0) {
+            disposeObject(object.children[0]);
+            object.remove(object.children[0]);
+        }
+    }
+}
+
+function disposeMaterial(material) {
+    //' Dispose textures in material properties
+    for (const key in material) {
+        if (Object.hasOwnProperty.call(material, key)) {
+            const value = material[key];
+            if (value && value.isTexture) {
+                value.dispose();
+            }
+        }
+    }
+    material.dispose();
+}
+$End If
+End Sub
+
+Sub Dispose (obj)
+    
+End Sub
+
 ' Setup
 ' ---------------------------------------------------------------
 Sub Init
@@ -333,13 +414,14 @@ $If Javascript Then
     var elements = document.querySelectorAll(".qbjs-3js-canvas");
     elements.forEach(el => { el.remove(); });
 $End If
-    'If window.__THREE Then 
-    '    __THREE = window.__THREE;
-    '    __GLTFLoader = window.__GLTFLoader
-    '    __OrbitControls = window.__OrbitControls
-    '    '__EffectComposer = window.__EffectComposer
-    '    Exit Sub
-    'End If
+    DisposeAll
+    If window.__THREE Then 
+        __THREE = window.__THREE;
+        __GLTFLoader = window.__GLTFLoader
+        '__OrbitControls = window.__OrbitControls
+        '__EffectComposer = window.__EffectComposer
+        Exit Sub
+    End If
     
     Dim As Object s, c
     c = Dom.Container
@@ -353,6 +435,9 @@ $End If
         "    'three/addons/': 'https://cdn.jsdelivr.net/npm/three@0.149.0/examples/jsm/'" + _
         "  }" + _
         "}"
+        '"    'three': 'http://localhost:8080/test/three/three.module.js'," + 
+        '"    'three/addons/': 'http://localhost:8080/test/three/addons/'" + 
+        
     s.type = "importmap"
     s.innerText = String.Replace(txt, "'", Chr$(34))   
     
@@ -367,7 +452,6 @@ $End If
         "import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';" + _
         "import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';" + _
         "import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';" + _
-        "import GUI from 'https://cdn.jsdelivr.net/npm/lil-gui@0.21/+esm';" + _
         "window.__THREE = THREE;" + _
         "window.__GLTFLoader = new GLTFLoader();" + _
         "window.__EffectComposer = EffectComposer;" + _
@@ -375,22 +459,13 @@ $End If
         "window.__RenderPass = RenderPass;" + _
         "window.__ShaderPass = ShaderPass;" + _
         "window.__FXAAShader = FXAAShader;" + _
-        "window.__GUI = GUI;" + _
-        "window.__OrbitControls = function(camera, canvas) { return new OrbitControls(camera, canvas); };"
+        "window.__OrbitControls = OrbitControls;"
         
-        
-        '"import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';" + _
-        '"import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';" + _
-        '"window.__GLTFLoader.setDRACOLoader(new DRACOLoader());" + _
-        '"window.__GLTFLoader.setKTX2Loader(new KTX2Loader());" + _
-    
     Dim wtimer As Integer
-    While !window.__THREE And wtimer < 10
+    While !window.__THREE And wtimer < 100
         Delay .1
         wtimer = wtimer + 1
     WEnd
     __THREE = window.__THREE
     __GLTFLoader = window.__GLTFLoader
-    __OrbitControls = window.__OrbitControls
-    '__EffectComposer = window.__EffectComposer
 End Sub

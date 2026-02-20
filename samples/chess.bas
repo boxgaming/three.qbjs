@@ -26,7 +26,8 @@ Dim Shared As Integer modelLoaded, skyboxLoaded, loadComplete, progress
 Dim Shared As Object scene, loadingMesh, chessboard, composer, renderer, camera, raycaster
 Dim Shared As Object psel, pmoves(28), phist(2)
 Dim As Object mesh, geometry, material, opts, mopts, texture, light
-Dim As Integer sw, sh
+Dim Shared As Object ctrlTurn, ctrlStatus, ctrlDelay
+Dim Shared As Integer sw, sh
 sw = ResizeWidth-5: sh = ResizeHeight-5
 Screen NewImage(sw, sh, 32)
 
@@ -43,7 +44,7 @@ popts(5).value = 4: popts(5).name = "AI - Advanced"
 popts(6).value = 5: popts(6).name = "AI - Expert"
 
 ' Initialize the game GUI
-Dim As Object cgui, ctrl, folder, ctrlTurn, ctrlStatus, ctrlDelay
+Dim As Object cgui, ctrl, folder
 cgui = GUI.Create
 GUI.Title cgui, "QBJS 3D Chess"
 ctrl = GUI.Add(cgui, config, "aiWhite")
@@ -162,7 +163,10 @@ THREE.Set effectFXAA.uniforms.resolution.value, 1 / sw, 1 / sh
 effectFXAA.renderToScreen = true
 THREE.AddPass composer, effectFXAA
 
-Do
+THREE.SetAnimationLoop renderer, @DrawScene
+
+'Do
+Sub DrawScene
     If Resize Then
         sw = ResizeWidth - 5: sh = ResizeHeight - 5
         Screen NewImage(sw, sh, 32)
@@ -235,8 +239,9 @@ Do
         'PrintString (Width \ 2 - 30, Height \ 2 + 8), "GAME OVER"
         DrawText Width \ 2 - 30, Height \ 2 + 8, "GAME OVER"
     End If
-    Limit 60
-Loop
+'    Limit 60
+'Loop
+End Sub
 
 Sub DrawText (x As Integer, y As Integer, text As String)
     Color 0:  PrintString (x+1, y+1), text 

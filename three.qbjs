@@ -1,6 +1,6 @@
 Option Explicit
-Dim Shared As Object __THREE, __GLTFLoader
-'Dim Shared As Object threeCanvas
+Dim Shared As Object __THREE, __GLTFLoader, renderCanvas
+Dim Shared embeddedMode
 Init
 
 ' Constant Exports
@@ -176,7 +176,6 @@ End Sub
 
 Function LoadTexture(path, onLoad)
 $If Javascript Then
-    //var loader = await func_RegisterObject(new __THREE.TextureLoader());
     var loader = new __THREE.TextureLoader();
     var texture = loader.load(path, onLoad);
     texture.colorSpace = __THREE.SRGBColorSpace;
@@ -190,9 +189,10 @@ Function WebGLRenderer (opts, embedded)
 $If Javascript Then
     renderer = await func_RegisterObject(new __THREE.WebGLRenderer(opts));
 $End If
-    renderer.qbjsEmbedded = embedded
+    embeddedMode = embedded
     renderer.domElement.className = "qbjs-3js-canvas"
-    If embedded Then
+    renderCanvas = renderer.domElement
+    If embeddedMode Then
         renderer.domElement.style.display = "none"
     End If
     Dom.Add renderer.domElement, Dom.Container
@@ -268,8 +268,8 @@ End Function
 Sub Render (renderer, scene, camera)
 $If Javascript Then
     renderer.render(scene, camera);
-    if (renderer.qbjsEmbedded) {
-        GX.ctx().drawImage(renderer.domElement, 0, 0);
+    if (embeddedMode) {
+        GX.ctx().drawImage(renderCanvas, 0, 0);
     }
 $End If
 End Sub
@@ -289,14 +289,6 @@ End Sub
 Function IntersectObjects (raycaster, elements)
 $If Javascript Then
     return raycaster.intersectObjects(elements);
-    //'console.log(objects);
-    //'return objects;
-    //'var objects = raycaster.intersectObjects(elements);
-    //'return objects;
-    //'if (objects.length > 0) {
-    //'    return objects[0].object;
-    //'}
-    //'return null;
 $End If
 End Function
 
@@ -364,8 +356,6 @@ $If Javascript Then
             var obj = window.__threeobjs[i];
             if (obj.dispose) { 
                 disposeObject(obj);
-                //'obj.dispose();
-                //'console.log("disposing: " + typeof obj);
             }
             else if (obj.destroy) { obj.destroy(); }
         }
@@ -430,8 +420,6 @@ $End If
     If window.__THREE Then 
         __THREE = window.__THREE;
         __GLTFLoader = window.__GLTFLoader
-        '__OrbitControls = window.__OrbitControls
-        '__EffectComposer = window.__EffectComposer
         Exit Sub
     End If
     
@@ -447,8 +435,6 @@ $End If
         "    'three/addons/': 'https://cdn.jsdelivr.net/npm/three@0.149.0/examples/jsm/'" + _
         "  }" + _
         "}"
-        '"    'three': 'http://localhost:8080/test/three/three.module.js'," + 
-        '"    'three/addons/': 'http://localhost:8080/test/three/addons/'" + 
         
     s.type = "importmap"
     s.innerText = String.Replace(txt, "'", Chr$(34))   

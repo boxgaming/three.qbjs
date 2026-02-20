@@ -1,6 +1,5 @@
 Import String From "lib/lang/string.bas"
 Import Dom From "lib/web/dom.bas"
-Import Console From "lib/web/console.bas"
 Import THREE From "https://boxgaming.github.io/three.qbjs/three.qbjs"
 Import Chess From "https://boxgaming.github.io/qbjs-lib/chess/js-chess-engine.bas"
 Import GUI From "https://boxgaming.github.io/qbjs-lib/gui/lil-gui.bas"
@@ -20,7 +19,7 @@ End Type
 Dim Shared config As GameConfig
 
 Dim popts(6) As Object
-Dim Shared selected, sceneMoving, aiMoving
+Dim Shared selected, sceneMoving, aiMoving, aiThinking
 Dim Shared As String lastMoveStart, lastMoveEnd
 Dim Shared As Object pmap(), bmap()
 Dim Shared As Integer modelLoaded, skyboxLoaded, loadComplete, progress
@@ -33,6 +32,7 @@ Screen NewImage(sw, sh, 32)
 
 ' Initialize the game config and player options
 config.aiBlack = 3
+config.aiDelay = 3
 config.turn = Chess.Turn
 config.onNewGame = @OnNewGame
 popts(1).value = 0: popts(1).name = "Human"
@@ -43,7 +43,7 @@ popts(5).value = 4: popts(5).name = "AI - Advanced"
 popts(6).value = 5: popts(6).name = "AI - Expert"
 
 ' Initialize the game GUI
-Dim As Object cgui, ctrl, folder, ctrlTurn, ctrlStatus
+Dim As Object cgui, ctrl, folder, ctrlTurn, ctrlStatus, ctrlDelay
 cgui = GUI.Create
 GUI.Title cgui, "QBJS 3D Chess"
 ctrl = GUI.Add(cgui, config, "aiWhite")
@@ -52,6 +52,9 @@ GUI.Options ctrl, popts
 ctrl = GUI.Add(cgui, config, "aiBlack")
 GUI.Name ctrl, "Black"
 GUI.Options ctrl, popts
+ctrlDelay = GUI.Add(cgui, config, "aiDelay", 1, 10)
+GUI.Name ctrlDelay, "AI Turn Delay"
+GUI.Disable ctrlDelay
 ctrlTurn = GUI.Add(cgui, config, "turn")
 GUI.Name ctrlTurn, "Turn"
 GUI.Disable ctrlTurn
@@ -81,6 +84,7 @@ scene = THREE.Scene
 
 CreateLoadingMesh
 
+' Create the skybox
 texture = THREE.LoadTexture("https://boxgaming.github.io/three.qbjs/test/images/mirrored_hall.jpg", @OnLoadTexture)
 texture.mapping = THREE.EquirectangularReflectionMapping
 texture.colorSpace = THREE.SRGBColorSpace
@@ -108,18 +112,19 @@ THREE.Add scene, light.target
 ctrl = GUI.Add(folder, light, "intensity", 0, 5)
 GUI.Name ctrl, "Directional"
 
+' Create planes representing the current selection, last move, and available moves
 psel = CreatePlane(&H1abaff)
 Dim i As Integer
 For i = 1 To UBound(pmoves)
     pmoves(i) = CreatePlane(&H1affba)
 Next i
-
 phist(1) = CreatePlane(&Hffff1a)
 phist(2) = CreatePlane(&Hffff1a)
 
 ' Load the chessboard model
 THREE.LoadGLTF "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/ABeautifulGame/glTF-Binary/ABeautifulGame.glb", @OnLoadModel, @OnProgress
 
+' Add the new game button
 ctrl = GUI.Add(cgui, config, "onNewGame")
 GUI.Name ctrl, "New Game"
 
@@ -167,7 +172,8 @@ Do
         THREE.SetSize renderer,sw, sh
         THREE.SetSize composer,sw, sh
     End If
-    
+  
+    ' Update the GUI with the current status
     config.turn = Chess.Turn
     GUI.UpdateDisplay ctrlTurn
     If Chess.IsCheckMate Then
@@ -177,47 +183,65 @@ Do
     Else
         config.status = ""
     End If
+    If config.aiWhite And config.aiBlack Then
+        GUI.Enable ctrlDelay
+    Else
+        GUI.Disable ctrlDelay
+    End If
     GUI.UpdateDisplay ctrlStatus
     
+    ' Render the scene
     Cls , RGB(75, 75, 75)
     THREE.Render composer, scene, camera
     
+    ' If the 3d model is still loading show a loading cube
     If Not modelLoaded Or Not skyboxLoaded Then 
         ShowLoading
         
+    ' Once loading is compelete remove the loading cube
     ElseIf Not loadComplete Then
         loadComplete = -1
         THREE.Remove scene, loadingMesh
         
+    ' Show a glowing outline when the mouse hovers over a moveable piece
     ElseIf sceneMoving = 0 Then
         THREE.ArrayClear outlinePass.selectedObjects
-        Dim p As Object: p = ObjectAtPointer 'GetNormalizedPos
+        Dim p As Object: p = ObjectAtPointer
         If p Then
             THREE.ArrayAdd outlinePass.selectedObjects, p
         End If
     End If
     
+    ' Perform an AI move, if necessary
     If loadComplete And Not aiMoving Then
         If Chess.Turn = "white" Then
             If config.aiWhite And Not Chess.IsFinished Then 
-                aiMoving = -1
+                aiMoving = -1: aiThinking = -1
                 SetTimeout @AIMove, 10
             End If
         Else
             If config.aiBlack And Not Chess.IsFinished Then 
-                aiMoving = -1
+                aiMoving = -1: aiThinking = -1
                 SetTimeout @AIMove, 10
             End If
         End If
     End If
     
-    If aiMoving Then
-        PrintString (20, 20), Chess.Turn + " is thinking..."
+    'If aiMoving Then
+    If aiThinking Then
+        'PrintString (20, 20), Chess.Turn + " is thinking..."
+        DrawText 20, 20, Chess.Turn + " is thinking..."
     ElseIf Chess.IsFinished Then
-        PrintString (Width \ 2 - 30, Height \ 2 + 8), "GAME OVER"
+        'PrintString (Width \ 2 - 30, Height \ 2 + 8), "GAME OVER"
+        DrawText Width \ 2 - 30, Height \ 2 + 8, "GAME OVER"
     End If
     Limit 60
 Loop
+
+Sub DrawText (x As Integer, y As Integer, text As String)
+    Color 0:  PrintString (x+1, y+1), text 
+    Color 15: PrintString (x, y), text
+End Sub
 
 Sub AIMove
     Dim level
@@ -230,6 +254,8 @@ Sub AIMove
     lastMoveEnd = hist(UBound(hist)).to
     ClearSelection
     UpdateBoard
+    aiThinking = 0
+    If config.aiWhite And config.aiBlack Then Delay config.aiDelay
     aiMoving = 0
 End Sub
 
@@ -427,14 +453,16 @@ Sub ShowLoading
     Dim As Integer cx, cy
     cx = ResizeWidth \ 2 - 65 
     cy = ResizeHeight \ 2 + 70
-    If Not modelLoaded Then PrintString (cx, cy), "Loading board... " + progress + "%"
-    If Not skyboxLoaded Then PrintString (cx, cy+20), "Loading skybox..."
+    'If Not modelLoaded Then PrintString (cx, cy), "Loading board... " + progress + "%"
+    'If Not skyboxLoaded Then PrintString (cx, cy+20), "Loading skybox..."
+    If Not modelLoaded Then DrawText cx, cy, "Loading board... " + progress + "%"
+    If Not skyboxLoaded Then DrawText cx, cy+20, "Loading skybox..."
 End Sub
 
 Function GetNormalizedPos
     Dim As Object pos
-    pos.x = _MouseX / _Width * 2 - 1
-    pos.y = _MouseY / _Height * -2 + 1
+    pos.x = MouseX / Width * 2 - 1
+    pos.y = MouseY / Height * -2 + 1
     GetNormalizedPos = pos
 End Function
 
@@ -442,6 +470,7 @@ Sub UpdateBoard
     Dim As Integer rank, file, lastPiece(), i, j
     Dim As String bstate(), p, s, plist
     
+    ' Move all of the pieces out of view
     plist = "KQBNRPkqbnrp"
     For i = 1 To Len(plist)
         p = Mid$(plist, i, 1)
@@ -455,7 +484,10 @@ Sub UpdateBoard
         Wend
     Next i
     
+    ' Get the current state of the board pieces from the chess API
     bstate = Chess.BoardPieces
+    
+    ' Place all active pieces on the board
     For file = 8 To 1 Step -1
         For rank = Asc("A") To Asc("H")
             s = Chr$(rank) + file
@@ -484,6 +516,7 @@ Sub UpdateBoard
     End If
 End Sub
 
+' Initialize the chessboard, calculating the position of each square
 Sub InitBoard
     Dim x, z
     Dim As Integer i, file, rank

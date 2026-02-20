@@ -1,6 +1,6 @@
 Option Explicit
 Dim Shared As Object __THREE, __GLTFLoader
-Dim Shared As Object threeCanvas
+'Dim Shared As Object threeCanvas
 Init
 
 ' Constant Exports
@@ -11,6 +11,7 @@ Export Scene, PerspectiveCamera
 Export PlaneGeometry, BoxGeometry
 Export AmbientLight, DirectionalLight, HemisphereLight
 Export Fog, CreateColor As Color, Vector2
+Export CanvasTexture
 Export Mesh, MeshBasicMaterial, MeshNormalMaterial, MeshPhongMaterial
 Export EffectComposer, RenderPass, OutlinePass, ShaderPass
 Export FXAAShader
@@ -155,9 +156,15 @@ $If Javascript Then
 $End If
 End Function
 
-Function OrbitControls(camera, canvas)
+Function OrbitControls (camera, canvas)
 $If Javascript Then
     return await func_RegisterObject(new __OrbitControls(camera, canvas));
+$End If
+End Function
+
+Function CanvasTexture (canvas)
+$If Javascript Then
+    return new __THREE.CanvasTexture(canvas);
 $End If
 End Function
 
@@ -177,15 +184,18 @@ $If Javascript Then
 $End If
 End Function
 
-Function WebGLRenderer (opts)
+Function WebGLRenderer (opts, embedded)
     Dim renderer As Object
+    If embedded = undefined Then embedded = -1
 $If Javascript Then
     renderer = await func_RegisterObject(new __THREE.WebGLRenderer(opts));
 $End If
+    renderer.qbjsEmbedded = embedded
     renderer.domElement.className = "qbjs-3js-canvas"
-    renderer.domElement.style.display = "none"
+    If embedded Then
+        renderer.domElement.style.display = "none"
+    End If
     Dom.Add renderer.domElement, Dom.Container
-    threeCanvas = renderer.domElement
     WebGLRenderer = renderer
 End Function
 
@@ -258,7 +268,9 @@ End Function
 Sub Render (renderer, scene, camera)
 $If Javascript Then
     renderer.render(scene, camera);
-    GX.ctx().drawImage(threeCanvas, 0, 0);
+    if (renderer.qbjsEmbedded) {
+        GX.ctx().drawImage(renderer.domElement, 0, 0);
+    }
 $End If
 End Sub
 

@@ -231,12 +231,9 @@ Sub DrawScene
         End If
     End If
     
-    'If aiMoving Then
     If aiThinking Then
-        'PrintString (20, 20), Chess.Turn + " is thinking..."
         DrawText 20, 20, Chess.Turn + " is thinking..."
     ElseIf Chess.IsFinished Then
-        'PrintString (Width \ 2 - 30, Height \ 2 + 8), "GAME OVER"
         DrawText Width \ 2 - 30, Height \ 2 + 8, "GAME OVER"
     End If
 '    Limit 60
@@ -396,10 +393,10 @@ Sub OnLoadModel (model)
     
     AddPiece "R", 1, "Castle_W1"
     AddPiece "R", 2, "Castle_W2"
-    AddPiece "N", 1, "Knight_W1", -1
-    AddPiece "N", 2, "Knight_W2", -1
-    AddPiece "B", 1, "Bishop_W1"
-    AddPiece "B", 2, "Bishop_W2"
+    AddPiece "N", 1, "Knight_W1"
+    AddPiece "N", 2, "Knight_W2"
+    AddPiece "B", 1, "Bishop_W1", -1
+    AddPiece "B", 2, "Bishop_W2", -1
     AddPiece "K", 1, "King_W"
     AddPiece "Q", 1, "Queen_W"
     Dim i As Integer
@@ -408,10 +405,10 @@ Sub OnLoadModel (model)
     Next i
     AddPiece "r", 1, "Castle_B1"
     AddPiece "r", 2, "Castle_B2"
-    AddPiece "n", 1, "Knight_B1", -1
-    AddPiece "n", 2, "Knight_B2", -1
-    AddPiece "b", 1, "Bishop_B1", -1
-    AddPiece "b", 2, "Bishop_B2", -1
+    AddPiece "n", 1, "Knight_B1"
+    AddPiece "n", 2, "Knight_B2"
+    AddPiece "b", 1, "Bishop_B1"
+    AddPiece "b", 2, "Bishop_B2"
     AddPiece "k", 1, "King_B"
     AddPiece "q", 1, "Queen_B"
     Dim i As Integer
@@ -458,8 +455,6 @@ Sub ShowLoading
     Dim As Integer cx, cy
     cx = ResizeWidth \ 2 - 65 
     cy = ResizeHeight \ 2 + 70
-    'If Not modelLoaded Then PrintString (cx, cy), "Loading board... " + progress + "%"
-    'If Not skyboxLoaded Then PrintString (cx, cy+20), "Loading skybox..."
     If Not modelLoaded Then DrawText cx, cy, "Loading board... " + progress + "%"
     If Not skyboxLoaded Then DrawText cx, cy+20, "Loading skybox..."
 End Sub
@@ -527,7 +522,7 @@ Sub InitBoard
     Dim As Integer i, file, rank
     Dim As String square
     z = BTOP
-    For rank = 8 To 1 Step -1 '1 To 8
+    For rank = 1 To 8
         file = Asc("H")
         x = BLEFT
         For i = 1 To 8

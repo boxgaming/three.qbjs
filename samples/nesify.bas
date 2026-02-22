@@ -10,12 +10,6 @@ Init3DScene
 Sub Render3DScene
     canvasTexture.needsUpdate = true
     THREE.Render renderer, scene, camera
-    GUI.UpdateDisplay cpx
-    GUI.UpdateDisplay cpy
-    GUI.UpdateDisplay cpz
-    GUI.UpdateDisplay crx
-    GUI.UpdateDisplay cry
-    GUI.UpdateDisplay crz
 End Sub
 
 Sub OnLoadModel (model)
@@ -27,7 +21,7 @@ Sub OnLoadModel (model)
     tv.rotation.y = -PI / 2
     tv.position.z = -50
     THREE.Add scene, tv
-    '
+    
     s = THREE.GetObjectByName(tv, "Object_6")
     Dim As Object material, opts
     canvasTexture = THREE.CanvasTexture(Dom.GetImage(0))

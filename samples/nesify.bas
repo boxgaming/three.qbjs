@@ -1,18 +1,24 @@
-Export Render3DScene
+Export Render3DScene, IsLoaded
 Option Explicit
 
-Dim Shared As Object scene, camera, renderer, canvasTexture, g
-Dim Shared As Object cpx, cpy, cpz, crx, cry, crz
-Dim Shared As Integer sw, sh
+Dim Shared As Object scene, camera, renderer, canvasTexture, g, loadingMesh
+Dim Shared As Integer sw, sh, modelsLoaded
 sw = Width: sh = Height
 Init3DScene
 
 Sub Render3DScene
     canvasTexture.needsUpdate = true
     THREE.Render renderer, scene, camera
+    If modelsLoaded < 2 Then ShowLoading
 End Sub
 
-Sub OnLoadModel (model)
+Function IsLoaded
+    Dim loaded As Integer
+    If modelsLoaded = 2 Then loaded = -1
+    IsLoaded = loaded
+End Function
+
+Sub OnLoadTV (model)
     'Console.Echo THREE.DumpObject(model.scene)
     Dim As Object tv, s
     tv = THREE.GetObjectByName(model.scene, "GLTF_SceneRootNode")
@@ -35,6 +41,8 @@ $If Javascript Then
 $End If
     Dom.Event win, "resize", @OnResize
     OnResize
+    modelsLoaded = modelsLoaded + 1
+    If modelsLoaded = 2 Then THREE.Remove scene, loadingMesh
 End Sub
 
 Sub OnLoadNES (model)
@@ -47,7 +55,9 @@ Sub OnLoadNES (model)
     nes.rotation.y = -1
     nes.position.x = 10
     nes.position.z = -2
-    nes.position.y = -8.2'-7
+    nes.position.y = -8.2
+    modelsLoaded = modelsLoaded + 1
+    If modelsLoaded = 2 Then THREE.Remove scene, loadingMesh
 End Sub
     
 Sub OnResize
@@ -97,12 +107,37 @@ Sub Init3DScene
     THREE.Set controls.target, -2.5, 0, 0
     THREE.Update controls
     
+    CreateLoadingMesh
+    
     ' Load the tv model
-    THREE.LoadGLTF "https://boxgaming.github.io/three.qbjs/test/models/magnavox_19_crt_tv_-_rr1938_w122.glb", @OnLoadModel', @OnProgress
+    THREE.LoadGLTF "https://boxgaming.github.io/three.qbjs/test/models/magnavox_19_crt_tv_-_rr1938_w122.glb", @OnLoadTV
     THREE.LoadGLTF "https://boxgaming.github.io/three.qbjs/test/models/nes_console_and_controller.glb", @OnLoadNES
     
     ' Hide the QBJS canvas
     Dim qbcanvas As Object
     qbcanvas = Dom.GetImage(0)
     qbcanvas.style.display = "none"
+End Sub
+
+Sub CreateLoadingMesh
+    Dim As Object geometry, texture, material, opts
+    geometry = THREE.BoxGeometry(3, 3, 3)
+    texture = THREE.LoadTexture("logo-256.png")
+    opts.map = texture
+    material = THREE.MeshPhongMaterial(opts)
+    
+    loadingMesh = THREE.Mesh(geometry, material)
+    'loadingMesh.position.y = 5 
+    THREE.Set loadingMesh.position, 8, -10, 5
+    'THREE.Set loadingMesh.scale, 30, 30, 30
+    'THREE.Set loadingMesh.position, -17.332125459906038, 0.33936720694222683, 22.941122980046135
+    THREE.Add scene, loadingMesh
+End Sub
+
+Sub ShowLoading
+    loadingMesh.rotation.x = loadingMesh.rotation.x + .02
+    loadingMesh.rotation.y = loadingMesh.rotation.y + .02
+    Dim As Integer cx, cy
+    cx = ResizeWidth \ 2 - 65 
+    cy = ResizeHeight \ 2 + 70
 End Sub

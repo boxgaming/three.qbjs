@@ -3,7 +3,7 @@ Import Dom From "lib/web/dom.bas"
 Import THREE From "https://boxgaming.github.io/three.qbjs/three.qbjs"
 Option Explicit
 
-Screen NewImage(ResizeWidth-5, ResizeHeight-5, 32)
+Screen NewImage(ResizeWidth-8, ResizeHeight-8, 32)
 
 Dim As Object scene, camera, renderer, geometry, material, cube, light, texture, opts
 ' Create the scene and camera

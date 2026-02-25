@@ -8,7 +8,7 @@ Export RepeatWrapping, NearestFilter, SRGBColorSpace, DoubleSide, Equirectangula
 
 ' Factory Exports
 Export Scene, PerspectiveCamera
-Export PlaneGeometry, BoxGeometry, EdgesGeometry, WireframeGeometry
+Export PlaneGeometry, BoxGeometry, SphereGeometry, EdgesGeometry, WireframeGeometry
 Export AmbientLight, DirectionalLight, HemisphereLight
 Export Fog, CreateColor As Color, Vector2
 Export CanvasTexture
@@ -103,15 +103,21 @@ $If Javascript Then
 $End If
 End Function
 
-Function PlaneGeometry (width, height)
+Function PlaneGeometry (width, height, widthSegments, heightSegments)
 $If Javascript Then
-    return await func_RegisterObject(new __THREE.PlaneGeometry(width, height));
+    return await func_RegisterObject(new __THREE.PlaneGeometry(width, height, widthSegments, heightSegments));
 $End If
 End Function
 
 Function BoxGeometry (width, height, depth, widthSegments, heightSegments, depthSegments) 
 $If Javascript Then
     return await func_RegisterObject(new __THREE.BoxGeometry(width, height, depth, widthSegments, heightSegments, depthSegments));
+$End If
+End Function
+
+Function SphereGeometry (radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength) 
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.SphereGeometry(radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength));
 $End If
 End Function
 
@@ -471,7 +477,6 @@ $End If
     's.innerText = String.Replace(txt, "'", Chr$(34))   
 $If Javascript Then
     s.innerText = txt.replaceAll("'", "\"");   
-    console.log(s.innerText);
     s = document.createElement("script");
     document.body.appendChild(s);
 $End If 

@@ -41,6 +41,14 @@ Sub Create (gtitle As String, fnCallback As Function)
 End Sub
 
 Sub RenderScene
+    If Resize Then
+        Dim As Integer sw, sh
+        sw = ResizeWidth - 5: sh = ResizeHeight - 5
+        Screen NewImage(sw, sh, 32)
+        camera.aspect = sw / sh
+        THREE.UpdateProjectionMatrix camera
+        THREE.SetSize renderer,sw, sh
+    End If
     mesh.rotation.x = mesh.rotation.x + .005
     mesh.rotation.y = mesh.rotation.y + .01
     THREE.Render renderer, scene, camera

@@ -8,11 +8,12 @@ Export RepeatWrapping, NearestFilter, SRGBColorSpace, DoubleSide, Equirectangula
 
 ' Factory Exports
 Export Scene, PerspectiveCamera
-Export PlaneGeometry, BoxGeometry
+Export PlaneGeometry, BoxGeometry, EdgesGeometry, WireframeGeometry
 Export AmbientLight, DirectionalLight, HemisphereLight
 Export Fog, CreateColor As Color, Vector2
 Export CanvasTexture
 Export Mesh, MeshBasicMaterial, MeshNormalMaterial, MeshPhongMaterial
+Export LineSegments, LineBasicMaterial
 Export EffectComposer, RenderPass, OutlinePass, ShaderPass
 Export FXAAShader
 Export WebGLRenderer, OrbitControls, Raycaster
@@ -164,7 +165,31 @@ End Function
 
 Function CanvasTexture (canvas)
 $If Javascript Then
-    return new __THREE.CanvasTexture(canvas);
+    return await func_RegisterObject(new __THREE.CanvasTexture(canvas));
+$End If
+End Function
+
+Function LineSegments (geometry, material)
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.LineSegments(geometry, material));
+$End If
+End Function
+
+Function LineBasicMaterial (parameters)
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.LineBasicMaterial(parameters));
+$End If
+End Function
+
+Function EdgesGeometry (geometry, thresholdAngle)
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.EdgesGeometry(geometry, thresholdAngle));
+$End If
+End Function
+
+Function WireframeGeometry (geometry)
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.WireframeGeometry(geometry));
 $End If
 End Function
 
@@ -195,7 +220,10 @@ $End If
     If embeddedMode Then
         renderer.domElement.style.display = "none"
     End If
-    Dom.Add renderer.domElement, Dom.Container
+    'Dom.Add renderer.domElement', Dom.Container
+$If Javascript Then
+    document.getElementById("gx-container").appendChild(renderer.domElement);
+$End If
     WebGLRenderer = renderer
 End Function
 
@@ -423,10 +451,13 @@ $End If
         Exit Sub
     End If
     
-    Dim As Object s, c
-    c = Dom.Container
-    s = Dom.Create("script", document.head)
-        
+    Dim As Object s
+    's = Dom.Create("script", document.head)
+$If Javascript Then
+    s = document.createElement("script");
+    document.head.appendChild(s);
+$End If
+
     Dim txt As String
     txt = _
         "{" + _
@@ -437,9 +468,14 @@ $End If
         "}"
         
     s.type = "importmap"
-    s.innerText = String.Replace(txt, "'", Chr$(34))   
-    
-    s = Dom.Create("script")
+    's.innerText = String.Replace(txt, "'", Chr$(34))   
+$If Javascript Then
+    s.innerText = txt.replaceAll("'", "\"");   
+    console.log(s.innerText);
+    s = document.createElement("script");
+    document.body.appendChild(s);
+$End If 
+    's = Dom.Create("script")
     s.type = "module"
     s.innerText = _
         "import * as THREE from 'three';" + _

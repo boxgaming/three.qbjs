@@ -59,6 +59,7 @@ Sub UpdateMesh
     geometry = fnCreateGeometry(gobj)
     If mesh.material = undefined Then
         opts.color = &H336699
+        opts.side = THREE.DoubleSide
         material = THREE.MeshPhongMaterial(opts)
         mesh = THREE.Mesh(geometry, material)
         THREE.Add scene, mesh

@@ -14,7 +14,7 @@ Sub Create (gtitle As String, fnCallback As Function)
     Dim As Object light, geometry, material, opts
     ' Create the camera
     camera = THREE.PerspectiveCamera(75, sw / sh, 0.01, 1000)
-    camera.position.z = 5
+    camera.position.z = 10
     
     ' Create the scene
     scene = THREE.Scene

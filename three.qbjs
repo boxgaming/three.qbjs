@@ -8,7 +8,10 @@ Export RepeatWrapping, NearestFilter, SRGBColorSpace, DoubleSide, Equirectangula
 
 ' Factory Exports
 Export Scene, PerspectiveCamera
-Export PlaneGeometry, BoxGeometry, SphereGeometry, EdgesGeometry, WireframeGeometry
+Export CircleGeometry, PlaneGeometry, RingGeometry
+Export BoxGeometry, ConeGeometry, CylinderGeometry, SphereGeometry, TorusGeometry, TorusKnotGeometry
+Export DodecahedronGeometry, IcosahedronGeometry, OctahedronGeometry, TetrahedronGeometry
+Export EdgesGeometry, WireframeGeometry
 Export AmbientLight, DirectionalLight, HemisphereLight
 Export Fog, CreateColor As Color, Vector2
 Export CanvasTexture
@@ -103,21 +106,93 @@ $If Javascript Then
 $End If
 End Function
 
-Function PlaneGeometry (width, height, widthSegments, heightSegments)
-$If Javascript Then
-    return await func_RegisterObject(new __THREE.PlaneGeometry(width, height, widthSegments, heightSegments));
-$End If
-End Function
-
 Function BoxGeometry (width, height, depth, widthSegments, heightSegments, depthSegments) 
 $If Javascript Then
     return await func_RegisterObject(new __THREE.BoxGeometry(width, height, depth, widthSegments, heightSegments, depthSegments));
 $End If
 End Function
 
+Function CircleGeometry (radius, segments, thetaStart, thetaLength)
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.CircleGeometry(radius, segments, thetaStart, thetaLength));
+$End If
+End Function
+
+Function ConeGeometry (radius, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength) 
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.ConeGeometry(radius, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength));
+$End If
+End Function
+
+Function CylinderGeometry (radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength) 
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.CylinderGeometry(radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength));
+$End If
+End Function
+
+Function DodecahedronGeometry (radius, detail)
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.DodecahedronGeometry(radius, detail));
+$End If
+End Function
+
+Function IcosahedronGeometry (radius, detail)
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.IcosahedronGeometry(radius, detail));
+$End If
+End Function
+
+Function OctahedronGeometry (radius, detail)
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.OctahedronGeometry(radius, detail));
+$End If
+End Function
+
+Function PlaneGeometry (width, height, widthSegments, heightSegments)
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.PlaneGeometry(width, height, widthSegments, heightSegments));
+$End If
+End Function
+
+Function RingGeometry (innerRadius, outerRadius, thetaSegments, phiSegments, thetaStart, thetaLength)
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.RingGeometry(innerRadius, outerRadius, thetaSegments, phiSegments, thetaStart, thetaLength));
+$End If
+End Function
+
 Function SphereGeometry (radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength) 
 $If Javascript Then
     return await func_RegisterObject(new __THREE.SphereGeometry(radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength));
+$End If
+End Function
+
+Function TetraHedronGeometry (radius, detail)
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.TetraHedronGeometry(radius, detail));
+$End If
+End Function
+
+Function TorusGeometry (radius, tubeRadius, radialSegments, tubularSegments)
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.TorusGeometry(radius, tubeRadius, radialSegments, tubularSegments));
+$End If
+End Function
+
+Function TorusKnotGeometry (radius, tubeRadius, tubularSegments, radialSegments, p, q)
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.TorusKnotGeometry(radius, tubeRadius, tubularSegments, radialSegments, p, q));
+$End If
+End Function
+
+Function EdgesGeometry (geometry, thresholdAngle)
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.EdgesGeometry(geometry, thresholdAngle));
+$End If
+End Function
+
+Function WireframeGeometry (geometry)
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.WireframeGeometry(geometry));
 $End If
 End Function
 
@@ -184,18 +259,6 @@ End Function
 Function LineBasicMaterial (parameters)
 $If Javascript Then
     return await func_RegisterObject(new __THREE.LineBasicMaterial(parameters));
-$End If
-End Function
-
-Function EdgesGeometry (geometry, thresholdAngle)
-$If Javascript Then
-    return await func_RegisterObject(new __THREE.EdgesGeometry(geometry, thresholdAngle));
-$End If
-End Function
-
-Function WireframeGeometry (geometry)
-$If Javascript Then
-    return await func_RegisterObject(new __THREE.WireframeGeometry(geometry));
 $End If
 End Function
 

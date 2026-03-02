@@ -7,19 +7,21 @@ Init
 Export RepeatWrapping, NearestFilter, SRGBColorSpace, DoubleSide, EquirectangularReflectionMapping
 
 ' Factory Exports
+Export Vector2, Vector3, Box2, Box3
 Export Scene, PerspectiveCamera
 Export CircleGeometry, PlaneGeometry, RingGeometry
 Export BoxGeometry, ConeGeometry, CylinderGeometry, SphereGeometry, TorusGeometry, TorusKnotGeometry
 Export DodecahedronGeometry, IcosahedronGeometry, OctahedronGeometry, TetrahedronGeometry
 Export EdgesGeometry, WireframeGeometry
 Export AmbientLight, DirectionalLight, HemisphereLight
-Export Fog, CreateColor As Color, Vector2
+Export Fog, CreateColor As Color
 Export CanvasTexture
 Export Mesh, MeshBasicMaterial, MeshNormalMaterial, MeshPhongMaterial
 Export LineSegments, LineBasicMaterial
 Export EffectComposer, RenderPass, OutlinePass, ShaderPass
 Export FXAAShader
-Export WebGLRenderer, OrbitControls, Raycaster
+Export OrbitControls, FlyControls, FirstPersonControls
+Export WebGLRenderer, Raycaster
 
 ' General Object3d Methods
 Export Set, SetSize, SetHex, SetPixelRatio
@@ -27,7 +29,7 @@ Export Add, AddPass, Clone, Update, Remove, Dispose
 
 ' Misc Methods
 Export Render, SetAnimationLoop, GetObjectByName, SetFromCamera, IntersectObjects
-Export UpdateProjectionMatrix
+Export UpdateProjectionMatrix, SetFromObject, ExpandByObject, GetCenter
 Export LoadGLTF, LoadTexture
 
 ' Utility Methods (not three.js)
@@ -52,9 +54,27 @@ $If Javascript Then
 $End If
 End Function
 
+Function Box2 (min, max)
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.Box3(min, max));
+$End If
+
+End Function
+Function Box3 (min, max)
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.Box3(min, max));
+$End If
+End Function
+
 Function Vector2 (x, y)
 $If Javascript Then
     return await func_RegisterObject(new __THREE.Vector2(x, y));
+$End If
+End Function
+
+Function Vector3 (x, y)
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.Vector3(x, y));
 $End If
 End Function
 
@@ -244,6 +264,18 @@ $If Javascript Then
 $End If
 End Function
 
+Function FlyControls (camera, canvas)
+$If Javascript Then
+    return await func_RegisterObject(new __FlyControls(camera, canvas));
+$End If
+End Function
+
+Function FirstPersonControls (camera, canvas)
+$If Javascript Then
+    return await func_RegisterObject(new __FirstPersonControls(camera, canvas));
+$End If
+End Function
+
 Function CanvasTexture (canvas)
 $If Javascript Then
     return await func_RegisterObject(new __THREE.CanvasTexture(canvas));
@@ -262,9 +294,9 @@ $If Javascript Then
 $End If
 End Function
 
-Sub Update (element)
+Sub Update (element, delta)
 $If Javascript Then
-    element.update();
+    element.update(delta);
 $End If
 End Sub
 
@@ -386,6 +418,24 @@ End Sub
 Function IntersectObjects (raycaster, elements)
 $If Javascript Then
     return raycaster.intersectObjects(elements);
+$End If
+End Function
+
+Sub ExpandByObject (element, obj, precise)
+$If Javascript Then
+    element.expandByObject(obj, precise);
+$End If
+End Sub
+
+Sub SetFromObject (element, obj)
+$If Javascript Then
+    element.setFromObject(obj);
+$End If
+End Sub
+
+Function GetCenter (element, target)
+$If Javascript Then
+    element.getCenter(target);
 $End If
 End Function
 
@@ -514,11 +564,11 @@ $If Javascript Then
     elements.forEach(el => { el.remove(); });
 $End If
     DisposeAll
-    If window.__THREE Then 
-        __THREE = window.__THREE;
-        __GLTFLoader = window.__GLTFLoader
-        Exit Sub
-    End If
+    'If window.__THREE Then 
+        '__THREE = window.__THREE;
+        '__GLTFLoader = window.__GLTFLoader
+        'Exit Sub
+    'End If
     
     Dim As Object s
     's = Dom.Create("script", document.head)
@@ -549,6 +599,8 @@ $End If
         "import * as THREE from 'three';" + _
         "import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';" + _
         "import { OrbitControls } from 'three/addons/controls/OrbitControls.js';" + _
+        "import { FlyControls } from 'three/addons/controls/FlyControls.js';" + _
+        "import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';" + _
         "import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';" + _
         "import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';" + _
         "import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';" + _
@@ -561,7 +613,9 @@ $End If
         "window.__RenderPass = RenderPass;" + _
         "window.__ShaderPass = ShaderPass;" + _
         "window.__FXAAShader = FXAAShader;" + _
-        "window.__OrbitControls = OrbitControls;"
+        "window.__OrbitControls = OrbitControls;" + _
+        "window.__FlyControls = FlyControls;" + _
+        "window.__FirstPersonControls = FirstPersonControls;"
         
     Dim wtimer As Integer
     While !window.__THREE And wtimer < 100

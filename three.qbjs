@@ -21,7 +21,7 @@ Export LineSegments, LineBasicMaterial
 Export EffectComposer, RenderPass, OutlinePass, ShaderPass
 Export FXAAShader
 Export OrbitControls, FlyControls, FirstPersonControls
-Export WebGLRenderer, Raycaster
+Export Clock, WebGLRenderer, Raycaster
 
 ' General Object3d Methods
 Export Set, SetSize, SetHex, SetPixelRatio
@@ -30,6 +30,7 @@ Export Add, AddPass, Clone, Update, Remove, Dispose
 ' Misc Methods
 Export Render, SetAnimationLoop, GetObjectByName, SetFromCamera, IntersectObjects
 Export UpdateProjectionMatrix, SetFromObject, ExpandByObject, GetCenter
+Export Start, Stop, GetElapsedTime, GetDelta
 Export LoadGLTF, LoadTexture
 
 ' Utility Methods (not three.js)
@@ -258,6 +259,12 @@ $If Javascript Then
 $End If
 End Function
 
+Function Clock (autoStart)
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.Clock(autoStart));
+$End If
+End Function
+
 Function OrbitControls (camera, canvas)
 $If Javascript Then
     return await func_RegisterObject(new __OrbitControls(camera, canvas));
@@ -299,6 +306,30 @@ $If Javascript Then
     element.update(delta);
 $End If
 End Sub
+
+Sub Start (element)
+$If Javascript Then
+    element.start();
+$End If
+End Sub
+
+Sub Stop (element)
+$If Javascript Then
+    element.stop();
+$End If
+End Sub
+
+Function GetDelta (element)
+$If Javascript Then
+    return element.getDelta();
+$End If
+End Function
+
+Function GetElapsedTime (element)
+$If Javascript Then
+    return element.getElapsedTime();
+$End If
+End Function
 
 Function LoadTexture(path, onLoad)
 $If Javascript Then

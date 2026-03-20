@@ -5,6 +5,7 @@ Init
 
 ' Constant Exports
 Export RepeatWrapping, NearestFilter, SRGBColorSpace, DoubleSide, EquirectangularReflectionMapping
+Export LoopRepeat, LoopOnce, LoopPingPong
 
 ' Factory Exports
 Export Vector2, Vector3, Box2, Box3
@@ -20,12 +21,20 @@ Export Mesh, MeshBasicMaterial, MeshNormalMaterial, MeshPhongMaterial
 Export LineSegments, LineBasicMaterial
 Export EffectComposer, RenderPass, OutlinePass, ShaderPass
 Export FXAAShader
+Export AnimationMixer
 Export OrbitControls, FlyControls, FirstPersonControls, PointerLockControls
 Export Clock, WebGLRenderer, Raycaster
 
 ' General Object3d Methods
 Export Set, SetSize, SetHex, SetPixelRatio
 Export Add, AddPass, Clone, Update, Remove, Dispose
+
+' Animaiton methods
+Export ClipAction, FindByName
+Export CrossFadeFrom, CrossFadeTo, FadeIn, FadeOut, Play, Reset, Halt, StartAt
+Export IsRunning, IsScheduled, StopFading, StopWarping, SyncWith, Warp
+Export GetClip, GetEffectiveTimeScale, GetEffectiveWeight, GetMixer, GetRoot
+Export SetDuration, SetEffectiveTimeScale, SetEffectiveWeight, SetLoop
 
 ' Misc Methods
 Export Render, SetAnimationLoop, GetObjectByName, SetFromCamera, IntersectObjects
@@ -42,6 +51,9 @@ Function RepeatWrapping: RepeatWrapping = __THREE.RepeatWrapping: End Function
 Function NearestFilter:  NearestFilter  = __THREE.NearestFilter:  End Function
 Function SRGBColorSpace: SRGBColorSpace = __THREE.SRGBColorSpace: End Function
 Function DoubleSide:     DoubleSide     = __THREE.DoubleSide:     End Function
+Function LoopRepeat:     LoopRepeat     = __THREE.LoopRepeat:     End Function
+Function LoopOnce:       LoopOnce       = __THREE.LoopOnce:       End Function
+Function LoopPingPong:   LoopPingPong   = __THREE.LoopPingPong:   End Function
 Function EquirectangularReflectionMapping: EquirectangularReflectionMapping = __THREE.EquirectangularReflectionMapping: End Function
 
 Function Scene
@@ -260,6 +272,12 @@ $If Javascript Then
 $End If
 End Function
 
+Function AnimationMixer (mesh)
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.AnimationMixer(mesh));
+$End If
+End Function
+
 Function Clock (autoStart)
 $If Javascript Then
     return await func_RegisterObject(new __THREE.Clock(autoStart));
@@ -313,6 +331,228 @@ $If Javascript Then
     element.update(delta);
 $End If
 End Sub
+
+Function FindByName (clips, cname)
+$If Javascript Then
+    return __THREE.AnimationClip.findByName(clips, cname);
+$End If
+End Function
+
+Function ClipAction (mixer, clip)
+$If Javascript Then
+    return mixer.clipAction(clip);
+$End If
+End Function
+
+Sub CrossFadeFrom (clipAction, fadeOutAction, duration, warp)
+$If Javascript Then
+    clipAction.crossFadeFrom(fadeOutAction, duration, warp);
+$End If
+End Sub
+
+Sub CrossFadeTo (clipAction, fadeInAction, duration, warp)
+$If Javascript Then
+    clipAction.crossFadeTo(fadeInAction, duration, warp);
+$End If
+End Sub
+
+Sub FadeIn (clipAction, duration)
+$If Javascript Then
+    clipAction.fadeIn(duration);
+$End If
+End Sub
+
+Sub FadeOut (clipAction, duration)
+$If Javascript Then
+    clipAction.fadeOut(duration);
+$End If
+End Sub
+
+Function GetClip (clipAction)
+$If Javascript Then
+    return clipAction.getClip();
+$End If
+End Function
+
+Function GetEffectiveTimeScale (clipAction)
+$If Javascript Then
+    return clipAction.getEffectiveTimeScale();
+$End If
+End Function
+
+Function GetEffectiveWeight (clipAction)
+$If Javascript Then
+    return clipAction.getEffectiveWeight();
+$End If
+End Function
+
+Function GetMixer (clipAction)
+$If Javascript Then
+    return clipAction.getMixer();
+$End If
+End Function
+
+Function GetRoot (clipAction)
+$If Javascript Then
+    return clipAction.getRoot();
+$End If
+End Function
+
+Sub Play (clipAction)
+$If Javascript Then
+    clipAction.play();
+$End If
+End Sub
+
+Sub Reset (clipAction)
+$If Javascript Then
+    clipAction.reset();
+$End If
+End Sub
+
+Sub Halt (clipAction, duration)
+$If Javascript Then
+    clipAction.halt(duration);
+$End If
+End Sub
+
+Function IsRunning (clipAction)
+$If Javascript Then
+    return clipAction.isRunning();
+$End If
+End Function
+
+Function IsScheduled (clipAction)
+$If Javascript Then
+    return clipAction.isScheduled();
+$End If
+End Function
+
+Sub SetDuration (clipAction, duration)
+$If Javascript Then
+    clipAction.setDuration(duration);
+$End If
+End Sub
+
+Sub SetEffectiveTimeScale (element, timeScale)
+$If Javascript Then
+    return element.setEffectiveTimeScale(timeScale);
+$End If
+End Function
+
+Sub SetEffectiveWeight (element, weight)
+$If Javascript Then
+    return element.setEffectiveWeight(weight);
+$End If
+End Function
+
+Sub SetLoop (element, mode, repetitions)
+$If Javascript Then
+    return element.setLoop(mode, repetitions);
+$End If
+End Function
+
+Sub Play (clipAction)
+$If Javascript Then
+    clipAction.play();
+$End If
+End Sub
+
+Sub StartAt (clipAction, t)
+$If Javascript Then
+    clipAction.startAt(t);
+$End If
+End Sub
+
+Sub StopFading (clipAction)
+$If Javascript Then
+    clipAction.stopFading();
+$End If
+End Sub
+
+Sub StopWarping (clipAction)
+$If Javascript Then
+    clipAction.stopWarping();
+$End If
+End Sub
+
+Sub SyncWith (clipAction, action)
+$If Javascript Then
+    clipAction.syncWith(action);
+$End If
+End Sub
+
+Sub Warp (clipAction, startTimeScale, endTimeScale, duration)
+$If Javascript Then
+    clipAction.warp(startTimeScale, endTimeScale, duration);
+$End If
+End Sub
+
+Function GetMixer (clipAction)
+$If Javascript Then
+    return clipAction.getMixer();
+$End If
+End Function
+
+Function GetRoot (clipAction)
+$If Javascript Then
+    return clipAction.getRoot();
+$End If
+End Function
+
+Sub Play (clipAction)
+$If Javascript Then
+    clipAction.play();
+$End If
+End Sub
+
+Sub Reset (clipAction)
+$If Javascript Then
+    clipAction.reset();
+$End If
+End Sub
+
+Sub Halt (clipAction, duration)
+$If Javascript Then
+    clipAction.halt(duration);
+$End If
+End Sub
+
+Function IsRunning (clipAction)
+$If Javascript Then
+    return clipAction.isRunning();
+$End If
+End Function
+
+Function IsScheduled (clipAction)
+$If Javascript Then
+    return clipAction.isScheduled();
+$End If
+End Function
+
+Sub SetDuration (clipAction, duration)
+$If Javascript Then
+    clipAction.setDuration(duration);
+$End If
+End Sub
+
+Sub SetEffectiveTimeScale (element, timeScale)
+$If Javascript Then
+    return element.setEffectiveTimeScale(timeScale);
+$End If
+End Function
+
+Sub SetEffectiveWeight (element, weight)
+$If Javascript Then
+    return element.setEffectiveWeight(weight);
+$End If
+End Function
+
+Sub SetLoop (element, mode, repetitions)
+$If Javascript Then
+    return element.setLoop(mode, repetitions);
+$End If
+End Function
 
 Sub Start (element)
 $If Javascript Then
@@ -626,11 +866,11 @@ $If Javascript Then
     elements.forEach(el => { el.remove(); });
 $End If
     DisposeAll
-    'If window.__THREE Then 
-        '__THREE = window.__THREE;
-        '__GLTFLoader = window.__GLTFLoader
-        'Exit Sub
-    'End If
+    If window.__THREE Then 
+        __THREE = window.__THREE;
+        __GLTFLoader = window.__GLTFLoader
+        Exit Sub
+    End If
     
     Dim As Object s
     's = Dom.Create("script", document.head)

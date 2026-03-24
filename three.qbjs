@@ -10,6 +10,7 @@ Export LoopRepeat, LoopOnce, LoopPingPong
 ' Factory Exports
 Export Vector2, Vector3, Box2, Box3
 Export Scene, PerspectiveCamera
+Export BufferAttribute, Float32BufferAttribute, BufferGeometry
 Export CircleGeometry, PlaneGeometry, RingGeometry
 Export BoxGeometry, ConeGeometry, CylinderGeometry, SphereGeometry, TorusGeometry, TorusKnotGeometry
 Export DodecahedronGeometry, IcosahedronGeometry, OctahedronGeometry, TetrahedronGeometry
@@ -27,7 +28,7 @@ Export Clock, WebGLRenderer, Raycaster
 
 ' General Object3d Methods
 Export Set, SetSize, SetHex, SetPixelRatio
-Export Add, AddPass, Clone, Update, Remove, Dispose
+Export Add, AddPass, Clone, Copy, Update, Remove, Dispose
 
 ' Animaiton methods
 Export ClipAction, FindByName
@@ -39,12 +40,16 @@ Export SetDuration, SetEffectiveTimeScale, SetEffectiveWeight, SetLoop
 ' Misc Methods
 Export Render, SetAnimationLoop, GetObjectByName, SetFromCamera, IntersectObjects
 Export UpdateProjectionMatrix, SetFromObject, ExpandByObject, GetCenter
+Export ComputeVertexNormals, ComputeBoundingBox, ComputeBoundingSphere
+Export ComputeTangents, SetAttribute, Center
+Export FromArray, AddScaledVector
 Export Start, Stop, GetElapsedTime, GetDelta
 Export Lock, Unlock, MoveForward, MoveRight
 Export LoadGLTF, LoadTexture
 
 ' Utility Methods (not three.js)
-Export DumpObject, ArrayClear, ArrayAdd, ArrayItem, ArrayLength
+Export ArrayCreate, ArrayClear, ArrayAdd, ArrayItem, ArrayLength, ArraySlice, ArrayRemove
+Export DumpObject, CreateFloat32Array As Float32Array
 
 ' "Constants"
 Function RepeatWrapping: RepeatWrapping = __THREE.RepeatWrapping: End Function
@@ -137,6 +142,24 @@ End Function
 Function Raycaster 
 $If Javascript Then
     return await func_RegisterObject(new __THREE.Raycaster());
+$End If
+End Function
+
+Function BufferAttribute (array, itemSize, normalized)
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.BufferAttribute(array, itemSize, normalized));
+$End If
+End Function
+
+Function Float32BufferAttribute (array, itemSize, normalized)
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.Float32BufferAttribute(array, itemSize, normalized));
+$End If
+End Function
+
+Function BufferGeometry
+$If Javascript Then
+    return await func_RegisterObject(new __THREE.BufferGeometry());
 $End If
 End Function
 
@@ -648,6 +671,12 @@ $If Javascript Then
 $End If
 End Function
 
+Sub Copy (element, sourceElement, recursive)
+$If Javascript Then
+    element.copy(sourceElement, recursive);
+$End If
+End Sub
+
 Sub Remove (parent, child)
 $If Javascript Then
     parent.remove(child);
@@ -741,6 +770,54 @@ $If Javascript Then
 $End If
 End Function
 
+Sub SetAttribute (element, attributeName, attribute)
+$If Javascript Then
+    element.setAttribute(attributeName, attribute);
+$End If
+End Sub
+
+Sub ComputeBoundingBox (element)
+$If Javascript Then
+    element.computeBoundingBox();
+$End If
+End Sub
+
+Sub ComputeBoundingSphere (element)
+$If Javascript Then
+    element.computeBoundingSphere();
+$End If
+End Sub
+
+Sub ComputeTangents (element)
+$If Javascript Then
+    element.computeTangents();
+$End If
+End Sub
+
+Sub ComputeVertexNormals (element)
+$If Javascript Then
+    element.computeVertexNormals();
+$End If
+End Sub
+
+Sub Center (element)
+$If Javascript Then
+    element.center();
+$End If
+End Sub
+
+Sub FromArray (element, array)
+$If Javascript Then
+    element.fromArray(array);
+$End If
+End Sub
+
+Sub AddScaledVector (element, vector, s)
+$If Javascript Then
+    element.addScaledVector(vector, s);
+$End If
+End Sub
+
 ' Utilities
 ' ---------------------------------------------------------------
 Function DumpObject (rootObj)
@@ -765,6 +842,25 @@ $If Javascript Then
 $End If
 End Function
 
+Function ArrayCreate
+$If Javascript Then
+    return [];
+$End If
+End Function
+
+Function ArraySlice (array, start, end)
+$If Javascript Then
+    return array.slice(start, end);
+$End If
+End Function
+
+Sub ArrayRemove (array, start, deleteCount)
+    If deleteCount = undefined Then deleteCount = 1
+$If Javascript Then
+    return array.splice(start, deleteCount)
+$End If
+End Sub
+
 Sub ArrayClear (array)
 $If Javascript Then
     array.length = 0;
@@ -786,6 +882,12 @@ End Function
 Function ArrayItem (array, index)
 $If Javascript Then
     return array[index];
+$End If
+End Function
+
+Function CreateFloat32Array
+$If Javascript Then
+    return new Float32Array(arguments);
 $End If
 End Function
 

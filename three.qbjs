@@ -29,6 +29,7 @@ Export Clock, WebGLRenderer, Raycaster
 ' General Object3d Methods
 Export Set, SetSize, SetHex, SetPixelRatio
 Export Add, AddPass, Clone, Copy, Update, Remove, Dispose
+Export LookAt, TranslateX, TranslateY, TranslateZ, GetWorldPosition
 
 ' Animaiton methods
 Export ClipAction, FindByName
@@ -39,13 +40,14 @@ Export SetDuration, SetEffectiveTimeScale, SetEffectiveWeight, SetLoop
 
 ' Misc Methods
 Export Render, SetAnimationLoop, GetObjectByName, SetFromCamera, IntersectObjects
-Export UpdateProjectionMatrix, SetFromObject, ExpandByObject, GetCenter
+Export UpdateProjectionMatrix, SetFromObject, SetFromCenterAndSize, ExpandByObject
 Export ComputeVertexNormals, ComputeBoundingBox, ComputeBoundingSphere
-Export ComputeTangents, SetAttribute, Center
+Export ComputeTangents, SetAttribute, Center, GetCenter
 Export FromArray, AddScaledVector
 Export Start, Stop, GetElapsedTime, GetDelta
 Export Lock, Unlock, MoveForward, MoveRight
 Export LoadGLTF, LoadTexture
+Export IntersectsBox
 
 ' Utility Methods (not three.js)
 Export ArrayCreate, ArrayClear, ArrayAdd, ArrayItem, ArrayLength, ArraySlice, ArrayRemove
@@ -713,6 +715,42 @@ $If Javascript Then
 $End If
 End Sub
 
+Sub LookAt (element, vx, y, z)
+$If Javascript Then
+    element.lookAt(vx, y, z);
+$End If
+End Sub
+
+Sub TranslateX (element, distance)
+$If Javascript Then
+    element.translateX(distance);
+$End If
+End Sub
+
+Sub TranslateY (element, distance)
+$If Javascript Then
+    element.translateY(distance);
+$End If
+End Sub
+
+Sub TranslateZ (element, distance)
+$If Javascript Then
+    element.translateZ(distance);
+$End If
+End Sub
+
+Sub GetWorldPosition (element, v3)
+$If Javascript Then
+    element.getWorldPosition(v3);
+$End If
+End Sub
+
+Sub LookAt (element, vx, y, z)
+$If Javascript Then
+    element.lookAt(vx, y, z);
+$End If
+End Sub
+
 Sub UpdateProjectionMatrix (element)
 $If Javascript Then
     element.updateProjectionMatrix();
@@ -764,6 +802,12 @@ $If Javascript Then
 $End If
 End Sub
 
+Sub SetFromCenterAndSize (element, center, size)
+$If Javascript Then
+    element.setFromCenterAndSize(center, size);
+$End If
+End Sub
+
 Function GetCenter (element, target)
 $If Javascript Then
     element.getCenter(target);
@@ -799,6 +843,12 @@ $If Javascript Then
     element.computeVertexNormals();
 $End If
 End Sub
+
+Function IntersectsBox (box, targetBox)
+$If Javascript Then
+    return box.intersectsBox(targetBox);
+$End If
+End Function
 
 Sub Center (element)
 $If Javascript Then
